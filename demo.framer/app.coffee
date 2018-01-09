@@ -120,7 +120,7 @@ picHalfScrollView.states =
 		y: pictureHalf.height + picHalfTitle.height
 		opacity: 0
 		animationOptions: picAnimation
-
+   
 # picture control
 picButtonReset = () ->
 	for layers in halfPics.subLayers
@@ -144,6 +144,50 @@ picReset = () ->
 	picHalfScrollView.stateSwitch("vanish")
 	pictureHalf.backgroundColor = "transparent"
 	enableToolBar()
+
+# locationhalf init
+locationScrollViewContent.draggable.enabled = true
+locationScrollViewContent.draggable.speedX = 0
+locationScrollViewContent.draggable.constraints = {
+	x: 0
+	y: locationScrollViewContent.superLayer.height - locationScrollViewContent.height
+	width: 0
+	height: (locationScrollViewContent.height - locationScrollViewContent.superLayer.height) + locationScrollViewContent.height
+}
+
+
+# location & range button init
+locationButton.on Events.Click, ->
+	
+rangeButton.on Events.Click, ->
+	
+# loc animations
+locAnimations =
+	curve: Spring(damping: 1) 
+	time: .5
+
+picHalfTitle.states = 
+	show:
+		y: 0
+		opacity: 1
+		animationOptions: picAnimation
+
+	vanish:
+		y: pictureHalf.height
+		opacity: 0
+		animationOptions: picAnimation
+
+picHalfScrollView.states = 
+	show:
+		y: picHalfTitle.height
+		opacity: 1
+		animationOptions: picAnimation
+
+	vanish:
+		y: pictureHalf.height + picHalfTitle.height
+		opacity: 0
+		animationOptions: picAnimation
+
 
 #toolbar init
 setButtonImg(toolBarButton0, "picture", pictureTouched, true)
