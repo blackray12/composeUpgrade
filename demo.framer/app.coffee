@@ -3,6 +3,18 @@
 # location info
 locInfo = [['北京','6093.3万'],['新浪总部大厦','10.3万'],['新浪食堂','0'],['百度科技园','103.6万'],['杨国福','109'],['达美乐','500']]
 
+# device logic here
+if Screen.height == 812 || Framer.Device.Type == "apple-iphone-x-space-gray" || Framer.Device.Type == "apple-iphone-x-silver"
+	locationHalf.height = 333
+	pictureHalf.height = 333
+	circleHalf.height = 333
+	toolBar.y = Screen.height - 333
+	locationRange.y = Screen.height - locationRange.height - 333
+	navigtionBarX.visible = true
+	navigationBar.visible = false
+else
+	navigtionBarX.visible = false
+
 # toolbar button init functions
 setButtonImg = (button, imgName, func1, isInstant, func2) ->
 	button.subLayers[0].image = "images/buttonImages/#{imgName}.png"
@@ -190,6 +202,7 @@ locationButtonBg.on Events.Click, ->
 	locShow()
 
 rangeButton.on Events.Click, ->
+	circleShow()
 
 # loc scroll content init function
 
@@ -240,6 +253,7 @@ locPositionReset = () ->
 	locationScrollViewContent.y = 0
 
 locVanish = () ->
+	locationButtonBg.ignoreEvents = false
 	locationTitle.animate("vanish")
 	locationScrollView.animate("vanish")
 	locationHalf.backgroundColor = "transparent"
@@ -248,6 +262,7 @@ locVanish = () ->
 
 locShow = () ->
 	locPositionReset()
+	locationButtonBg.ignoreEvents = true
 	locationTitle.animate("show")
 	locationScrollView.animate("show")
 	locationHalf.backgroundColor = "f6f6f6"
@@ -255,10 +270,64 @@ locShow = () ->
 	disableToolBar()
 
 locReset = () ->
+	locationButtonBg.ignoreEvents = false
 	locationTitle.stateSwitch("vanish")
 	locationScrollView.stateSwitch("vanish")
 	locationHalf.backgroundColor = "transparent"
-	locationScrollView.backgroundColor = "ffffff"
+	locationScrollView.backgroundColor = "transparent"
+	enableToolBar()
+
+# circle animations
+circleAnimations =
+	curve: Spring(damping: 1) 
+	time: .5
+
+circleTitle.states = 
+	show:
+		y: 0
+		opacity: 1
+		animationOptions: locAnimations
+
+	vanish:
+		y: locationHalf.height
+		opacity: 0
+		animationOptions: locAnimations
+
+circleScrollView.states = 
+	show:
+		y: locationTitle.height
+		opacity: 1
+		animationOptions: locAnimations
+
+	vanish:
+		y: locationHalf.height + locationTitle.height
+		opacity: 0
+		animationOptions: locAnimations
+
+# circle control
+circlePositionReset = () ->
+	circleScrollViewContent.y = 0
+
+circleVanish = () ->
+	circleTitle.animate("vanish")
+	circleScrollView.animate("vanish")
+	circleHalf.backgroundColor = "transparent"
+	circleScrollView.backgroundColor = "transparent"
+	enableToolBar()
+
+circleShow = () ->
+	circlePositionReset()
+	circleTitle.animate("show")
+	circleScrollView.animate("show")
+	circleHalf.backgroundColor = "f6f6f6"
+	circleScrollView.backgroundColor = "ffffff"
+	disableToolBar()
+
+circleReset = () ->
+	circleTitle.stateSwitch("vanish")
+	circleScrollView.stateSwitch("vanish")
+	circleHalf.backgroundColor = "transparent"
+	circleScrollView.backgroundColor = "transparent"
 	enableToolBar()
 
 #toolbar init
@@ -287,7 +356,7 @@ for layers in halfPics.subLayers
 picFinishButton.on Events.Click, ->
 	picVanish()
 
-# locationhalf init
+# location init
 locationScrollView.clip = true
 locationScrollViewContent.draggable.enabled = true
 locationScrollViewContent.draggable.speedX = 0
@@ -301,9 +370,24 @@ locationScrollViewContent.draggable.constraints = {
 locationScrollViewContent.on Events.DragStart, ->
 	locationScrollViewContent.clickStat = false
 
+locSearchButton.on Events.Click, ->
 
+# circle init
 
+circleScrollView.clip = true
+circleScrollViewContent.draggable.enabled = true
+circleScrollViewContent.draggable.speedX = 0
+circleScrollViewContent.draggable.constraints = {
+	x: 0
+	y: circleScrollViewContent.superLayer.height - circleScrollViewContent.height
+	width: 0
+	height: (circleScrollViewContent.height - circleScrollViewContent.superLayer.height) + circleScrollViewContent.height
+}
+
+circleFinIshButton.on Events.Click, ->
+	circleVanish()
 
 picReset()
 locReset()
 setLocButtonNormal()
+circleReset()
