@@ -1,19 +1,119 @@
+# 基础信息
+
 # all data here
 
 # location info
 locInfo = [['北京','6093.3万'],['新浪总部大厦','10.3万'],['新浪食堂','0'],['百度科技园','103.6万'],['杨国福','109'],['达美乐','500']]
 
+# default ranges
+defaultRanges = ['公开', '好友圈', '仅自己可见']
+
+# 范围列表可选元素
+circleCheckableButtons = [0, 1, 2, 4, 5]
+
+
+#设备适配
+
 # device logic here
 if Screen.height == 812 || Framer.Device.Type == "apple-iphone-x-space-gray" || Framer.Device.Type == "apple-iphone-x-silver"
 	locationHalf.height = 333
+	locationScrollViewContent.height += 20
 	pictureHalf.height = 333
 	circleHalf.height = 333
+	circleScrollViewContent.height += 20
 	toolBar.y = Screen.height - 333
 	locationRange.y = Screen.height - locationRange.height - 333
 	navigtionBarX.visible = true
 	navigationBar.visible = false
 else
 	navigtionBarX.visible = false
+
+
+# 动画、状态
+
+# pic animations
+picAnimation =
+	curve: Spring(damping: 1) 
+	time: .5
+
+picHalfTitle.states = 
+	show:
+		y: 0
+		opacity: 1
+		animationOptions: picAnimation
+
+	vanish:
+		y: pictureHalf.height
+		opacity: 0
+		animationOptions: picAnimation
+
+picHalfScrollView.states = 
+	show:
+		y: picHalfTitle.height
+		opacity: 1
+		animationOptions: picAnimation
+
+	vanish:
+		y: pictureHalf.height + picHalfTitle.height
+		opacity: 0
+		animationOptions: picAnimation
+
+# circle animations
+circleAnimations =
+	curve: Spring(damping: 1) 
+	time: .5
+
+circleTitle.states = 
+	show:
+		y: 0
+		opacity: 1
+		animationOptions: circleAnimations
+
+	vanish:
+		y: locationHalf.height
+		opacity: 0
+		animationOptions: circleAnimations
+
+circleScrollView.states = 
+	show:
+		y: locationTitle.height
+		opacity: 1
+		animationOptions: circleAnimations
+
+	vanish:
+		y: locationHalf.height + locationTitle.height
+		opacity: 0
+		animationOptions: circleAnimations
+
+# loc animations
+locAnimations =
+	curve: Spring(damping: 1) 
+	time: .5
+
+locationTitle.states = 
+	show:
+		y: 0
+		opacity: 1
+		animationOptions: locAnimations
+
+	vanish:
+		y: locationHalf.height
+		opacity: 0
+		animationOptions: locAnimations
+
+locationScrollView.states = 
+	show:
+		y: locationTitle.height
+		opacity: 1
+		animationOptions: locAnimations
+
+	vanish:
+		y: locationHalf.height + locationTitle.height
+		opacity: 0
+		animationOptions: locAnimations
+
+
+#初始化用函数
 
 # toolbar button init functions
 setButtonImg = (button, imgName, func1, isInstant, func2) ->
@@ -50,40 +150,6 @@ setButtonImg = (button, imgName, func1, isInstant, func2) ->
 			else
 				button.subLayers[0].image = "images/buttonImages/key.png"
 
-# toolbar control
-disableToolBar = ()->
-	for layers in toolBar.subLayers
-		layers.ignoreEvents = true
-
-enableToolBar = ()->
-	for layers in toolBar.subLayers
-		layers.ignoreEvents = false
-
-# toolbar functions
-
-# picture touched
-pictureTouched = () ->
-	picShow()
-# at touched	
-atTouched = () ->
-
-# topic touched
-topicTouched = () ->
-	
-# emoji selected
-emojiSelected = () ->
-	toolBarButton4.reset()
-	
-# emoji unselected
-emojiUnselceted = () ->
-
-# plus selected
-plusSelected = () ->
-	toolBarButton3.reset()
-	
-# plus unselected
-plusUnselceted = () ->
-
 # picture init functions
 picButtonPosInit = (pic) ->
 	picHalfScrollViewContent.on "change:x", ->
@@ -111,100 +177,38 @@ picButtonInit = (pic) ->
 picInit = (pic, i) ->
 	pic.image = "images/pictures/#{i}.jpg"
 
-# pic animations
-picAnimation =
-	curve: Spring(damping: 1) 
-	time: .5
+# circle scroll content init function
 
-picHalfTitle.states = 
-	show:
-		y: 0
-		opacity: 1
-		animationOptions: picAnimation
+circleScrollViewContent.on Events.DragStart, ->
+	circleScrollViewContent.clickStat = false
 
-	vanish:
-		y: pictureHalf.height
-		opacity: 0
-		animationOptions: picAnimation
-
-picHalfScrollView.states = 
-	show:
-		y: picHalfTitle.height
-		opacity: 1
-		animationOptions: picAnimation
-
-	vanish:
-		y: pictureHalf.height + picHalfTitle.height
-		opacity: 0
-		animationOptions: picAnimation
-
-# picture control
-picButtonReset = () ->
-	for layers in halfPics.subLayers
-		layers.reset()
-
-picVanish = () ->
-	picHalfTitle.animate("vanish")
-	picHalfScrollView.animate("vanish")
-	pictureHalf.backgroundColor = "transparent"
-	enableToolBar()
-
-picShow = () ->
-	picButtonReset()
-	picHalfTitle.animate("show")
-	picHalfScrollView.animate("show")
-	pictureHalf.backgroundColor = "f6f6f6"
-	disableToolBar()
-
-picReset = () ->
-	picHalfTitle.stateSwitch("vanish")
-	picHalfScrollView.stateSwitch("vanish")
-	pictureHalf.backgroundColor = "transparent"
-	enableToolBar()
-
-# loc button functions
-
-locationButtonBg.on "change:width", ->
-	newX = locationButtonBg.width - locationCancelButton.width
-	locationCancelButton.x = newX
-
-locationCancelButton.on Events.Click, ->
-	setLocButtonNormal()
-
-setLocButtonText = (location) ->
-	locationButtonText.text = location
-	if locationButton.active
-		newButtonWidth = locationButtonIcon.width + locationButtonText.width + locationCancelButton.width + locationButtonIcon.x + 9
-	else
-		newButtonWidth = locationButtonIcon.width + locationButtonText.width + locationButtonIcon.x + 9
-	locationButtonBg.animate
-		width: newButtonWidth
-		options:
-			curve: Spring(damping: 1)
-			time: 0.3
-
-setLocButtonActive = (location) ->
-	locationCancelButton.visible = true
-	locationButton.active = true
-	setLocButtonText(location)
-	locationButtonText.color = "#4F7DB2"
-	locationButtonIcon.image = "images/locationRangeButtonImages/locBlue.png"
-
-setLocButtonNormal = () ->
-	locationCancelButton.visible = false
-	locationButton.active = false
-	setLocButtonText("你在哪里？")
-	locationButtonText.color = "#939393"
-	locationButtonIcon.image = "images/locationRangeButtonImages/locGray.png"
-
-# location & range button control
-locationButtonBg.on Events.Click, ->
-	locShow()
-
-rangeButton.on Events.Click, ->
-	circleShow()
+setCircleScrollContent = (layer) ->
+	layer.isChecked = false
+	layer.subLayers[0].image = "images/circleButtons/uncheck.png"
+	layer.setUncheck = () ->
+		layer.subLayers[0].image = "images/circleButtons/uncheck.png"
+		layer.isChecked = false
+	layer.setCheck = () ->
+		layer.subLayers[0].image = "images/circleButtons/check.png"
+		layer.isChecked = true
+	layer.on Events.MouseDown, ->
+		circleScrollViewContent.clickStat = true
+	layer.on Events.MouseUp, ->
+		if circleScrollViewContent.clickStat
+			locationScrollViewContent.clickStat = false
+			if this.isChecked
+				circleVanish()
+			else
+				for i in circleCheckableButtons
+					circleScrollViewContent.subLayers[i].setUncheck()
+				this.setCheck()
+				circleVanish()
+				setRangeButtonTextIcon(this.subLayers[1].text)
 
 # loc scroll content init function
+
+locationScrollViewContent.on Events.DragStart, ->
+	locationScrollViewContent.clickStat = false
 
 setLocScrollContent = (layer, location, quantity) ->
 	layer.subLayers[0].text = location
@@ -220,38 +224,96 @@ setLocScrollContent = (layer, location, quantity) ->
 for i in [0...locationScrollViewContent.subLayers.length]
 	setLocScrollContent(locationScrollViewContent.subLayers[i], locInfo[i][0], locInfo[i][1])
 
-# loc animations
-locAnimations =
-	curve: Spring(damping: 1) 
-	time: .5
 
-locationTitle.states = 
-	show:
-		y: 0
-		opacity: 1
-		animationOptions: locAnimations
+# 各模块的控制函数
 
-	vanish:
-		y: locationHalf.height
-		opacity: 0
-		animationOptions: locAnimations
+# toolbar control
 
-locationScrollView.states = 
-	show:
-		y: locationTitle.height
-		opacity: 1
-		animationOptions: locAnimations
+# 使 toolbar 所有按钮事件失效
+disableToolBar = ()->
+	for layers in toolBar.subLayers
+		layers.ignoreEvents = true
 
-	vanish:
-		y: locationHalf.height + locationTitle.height
-		opacity: 0
-		animationOptions: locAnimations
+# 使 toolbar 所有按钮事件生效
+enableToolBar = ()->
+	for layers in toolBar.subLayers
+		layers.ignoreEvents = false
+
+# picture control
+
+# 初始化图片面板 scrollview 位置
+picPositionReset = () ->
+	picHalfScrollViewContent.x = 0
+
+# 初始化图片 checkbox
+picButtonReset = () ->
+	for layers in halfPics.subLayers
+		layers.reset()
+
+# 图片面板动画消失
+picVanish = () ->
+	picHalfTitle.animate("vanish")
+	picHalfScrollView.animate("vanish")
+	pictureHalf.backgroundColor = "transparent"
+	enableToolBar()
+
+# 图片面板动画出现
+picShow = () ->
+	picPositionReset()
+	picButtonReset()
+	picHalfTitle.animate("show")
+	picHalfScrollView.animate("show")
+	pictureHalf.backgroundColor = "f6f6f6"
+	disableToolBar()
+
+# 初始化图片面板
+picReset = () ->
+	picHalfTitle.stateSwitch("vanish")
+	picHalfScrollView.stateSwitch("vanish")
+	pictureHalf.backgroundColor = "transparent"
+	enableToolBar()
+
+# circle control
+
+# 初始化发布范围 scrollview 位置
+circlePositionReset = () ->
+	circleScrollViewContent.y = 0
+
+# 发布范围面板动画消失
+circleVanish = () ->
+	rangeButton.ignoreEvents = false
+	circleTitle.animate("vanish")
+	circleScrollView.animate("vanish")
+	circleHalf.backgroundColor = "transparent"
+	circleScrollView.backgroundColor = "transparent"
+	enableToolBar()
+
+# 发布范围面板动画出现
+circleShow = () ->
+	rangeButton.ignoreEvents = true
+	circlePositionReset()
+	circleTitle.animate("show")
+	circleScrollView.animate("show")
+	circleHalf.backgroundColor = "f6f6f6"
+	circleScrollView.backgroundColor = "ffffff"
+	disableToolBar()
+
+# 发布范围面板初始化
+circleReset = () ->
+	rangeButton.ignoreEvents = false
+	circleTitle.stateSwitch("vanish")
+	circleScrollView.stateSwitch("vanish")
+	circleHalf.backgroundColor = "transparent"
+	circleScrollView.backgroundColor = "transparent"
+	enableToolBar()
 
 # loc control
 
+# 初始化地理位置 scrollview 位置
 locPositionReset = () ->
 	locationScrollViewContent.y = 0
 
+# 地理位置面板动画消失
 locVanish = () ->
 	locationButtonBg.ignoreEvents = false
 	locationTitle.animate("vanish")
@@ -260,6 +322,7 @@ locVanish = () ->
 	locationScrollView.backgroundColor = "transparent"
 	enableToolBar()
 
+# 地理位置面板动画出现
 locShow = () ->
 	locPositionReset()
 	locationButtonBg.ignoreEvents = true
@@ -269,6 +332,7 @@ locShow = () ->
 	locationScrollView.backgroundColor = "ffffff"
 	disableToolBar()
 
+# 地理位置面板初始化
 locReset = () ->
 	locationButtonBg.ignoreEvents = false
 	locationTitle.stateSwitch("vanish")
@@ -277,58 +341,91 @@ locReset = () ->
 	locationScrollView.backgroundColor = "transparent"
 	enableToolBar()
 
-# circle animations
-circleAnimations =
-	curve: Spring(damping: 1) 
-	time: .5
+# loc button control
 
-circleTitle.states = 
-	show:
-		y: 0
-		opacity: 1
-		animationOptions: locAnimations
+# 根据输入字符串设置地理位置 button 的文字内容
+setLocButtonText = (location) ->
+	locationButtonText.text = location
+	if locationButton.active
+		newButtonWidth = locationButtonIcon.width + locationButtonText.width + locationCancelButton.width + locationButtonIcon.x + 9
+	else
+		newButtonWidth = locationButtonIcon.width + locationButtonText.width + locationButtonIcon.x + 9
+	locationButtonBg.animate
+		width: newButtonWidth
+		options:
+			curve: Spring(damping: 1)
+			time: 0.3
 
-	vanish:
-		y: locationHalf.height
-		opacity: 0
-		animationOptions: locAnimations
+# 根据输入的字符串将地理位置 button 设置成激活状态
+setLocButtonActive = (location) ->
+	locationCancelButton.visible = true
+	locationButton.active = true
+	setLocButtonText(location)
+	locationButtonText.color = "#4F7DB2"
+	locationButtonIcon.image = "images/locationRangeButtonImages/locBlue.png"
 
-circleScrollView.states = 
-	show:
-		y: locationTitle.height
-		opacity: 1
-		animationOptions: locAnimations
+# 初始化地理位置 button 状态
+setLocButtonNormal = () ->
+	locationCancelButton.visible = false
+	locationButton.active = false
+	setLocButtonText("你在哪里？")
+	locationButtonText.color = "#939393"
+	locationButtonIcon.image = "images/locationRangeButtonImages/locGray.png"
 
-	vanish:
-		y: locationHalf.height + locationTitle.height
-		opacity: 0
-		animationOptions: locAnimations
+# range button functions
 
-# circle control
-circlePositionReset = () ->
-	circleScrollViewContent.y = 0
+# 根据输入字符串设置发布范围 button 的 icon 和文字
+setRangeButtonTextIcon = (type) ->
+	rangeButtonText.text = type
+	newButtonWidth = rangeButtonIcon.width + rangeButtonText.width + 9 + 4
+	rangeButtonBg.animate
+		width: newButtonWidth
+		options:
+			curve: Spring(damping: 1)
+			time: 0.3
+	isUser = true
+	for word in defaultRanges
+		if type == word
+			rangeButtonIcon.image = "images/rangeIcons/#{type}.png"
+			isUser = false
+	if isUser
+		rangeButtonIcon.image = "images/rangeIcons/user.png"
 
-circleVanish = () ->
-	circleTitle.animate("vanish")
-	circleScrollView.animate("vanish")
-	circleHalf.backgroundColor = "transparent"
-	circleScrollView.backgroundColor = "transparent"
-	enableToolBar()
+# 将发布范围状态初始化
+setRangeButtonNormal = () ->
+	setRangeButtonTextIcon("公开")
+	circleScrollViewContent.subLayers[0].setCheck()
 
-circleShow = () ->
-	circlePositionReset()
-	circleTitle.animate("show")
-	circleScrollView.animate("show")
-	circleHalf.backgroundColor = "f6f6f6"
-	circleScrollView.backgroundColor = "ffffff"
-	disableToolBar()
 
-circleReset = () ->
-	circleTitle.stateSwitch("vanish")
-	circleScrollView.stateSwitch("vanish")
-	circleHalf.backgroundColor = "transparent"
-	circleScrollView.backgroundColor = "transparent"
-	enableToolBar()
+# toolbar 事件控制
+
+# toolbar events
+
+# picture touched
+pictureTouched = () ->
+	picShow()
+# at touched	
+atTouched = () ->
+
+# topic touched
+topicTouched = () ->
+	
+# emoji selected
+emojiSelected = () ->
+	toolBarButton4.reset()
+	
+# emoji unselected
+emojiUnselceted = () ->
+
+# plus selected
+plusSelected = () ->
+	toolBarButton3.reset()
+	
+# plus unselected
+plusUnselceted = () ->
+
+
+# 初始化
 
 #toolbar init
 setButtonImg(toolBarButton0, "picture", pictureTouched, true)
@@ -356,6 +453,8 @@ for layers in halfPics.subLayers
 picFinishButton.on Events.Click, ->
 	picVanish()
 
+picReset()
+
 # location init
 locationScrollView.clip = true
 locationScrollViewContent.draggable.enabled = true
@@ -367,10 +466,10 @@ locationScrollViewContent.draggable.constraints = {
 	height: (locationScrollViewContent.height - locationScrollViewContent.superLayer.height) + locationScrollViewContent.height
 }
 
-locationScrollViewContent.on Events.DragStart, ->
-	locationScrollViewContent.clickStat = false
+locReset()
 
 locSearchButton.on Events.Click, ->
+
 
 # circle init
 
@@ -384,10 +483,34 @@ circleScrollViewContent.draggable.constraints = {
 	height: (circleScrollViewContent.height - circleScrollViewContent.superLayer.height) + circleScrollViewContent.height
 }
 
-circleFinIshButton.on Events.Click, ->
+for i in circleCheckableButtons
+	setCircleScrollContent(circleScrollViewContent.subLayers[i])
+
+circleReset()
+
+circleFinishButton.on Events.Click, ->
 	circleVanish()
 
-picReset()
-locReset()
+# location & range button init
+
+locationButtonBg.on "change:width", ->
+	newX = locationButtonBg.width - locationCancelButton.width
+	locationCancelButton.x = newX
+
+locationCancelButton.on Events.Click, ->
+	setLocButtonNormal()
+
+rangeButtonBg.on "change:width", ->
+	rangeButtonText.x = rangeButton.width - rangeButtonBg.width + rangeButtonIcon.width + 4 
+	rangeButtonIcon.x = rangeButton.width - rangeButtonBg.width + 4
+
 setLocButtonNormal()
-circleReset()
+setRangeButtonNormal()
+
+locationButtonBg.on Events.Click, ->
+	locShow()
+	circleVanish()
+
+rangeButton.on Events.Click, ->
+	circleShow()
+	locVanish()
