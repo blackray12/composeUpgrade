@@ -19,9 +19,10 @@ SpaceForiPhoneX = 0
 TopSpaceForiPhoneX = 0
 SpaceForRange = 0
 iPhoneXStatuBar.opacity = 0
+SpaceForStikyHeader = 0
 if Screen.height == 812 || Framer.Device.deviceType == 'apple-iphone-x-silver' or Framer.Device.deviceType == 'apple-iphone-x-space-gray'
 	locationHalf.height = 333
-	SpaceForRange = 33
+	SpaceForRange = 32
 	locationScrollViewContent.height += 20
 	keyboard.y = Screen.height - 291
 	SpaceForiPhoneX = 75
@@ -33,8 +34,10 @@ if Screen.height == 812 || Framer.Device.deviceType == 'apple-iphone-x-silver' o
 	circleScrollViewContent.height += 20
 	toolBar.y = Screen.height - 333 - 42
 	locationRange.y = Screen.height - locationRange.height - 333 - 42
-pictureHalf.y -= SpaceForiPhoneX
-
+	SpaceForStikyHeader = 13
+pictureHalf.y -= SpaceForiPhoneX - 32
+SearchResult.height += SpaceForiPhoneX
+SearchResult.y += TopSpaceForiPhoneX
 # InputLayer Settings / Default animation
 {InputLayer} = require "input"
 # Wrap input layer
@@ -403,6 +406,7 @@ setLocButtonNormal = () ->
 	locationButtonText.color = "#939393"
 	locationButtonIcon.image = "images/locationRangeButtonImages/locGray.png"
 
+
 # range button functions
 
 # 根据输入字符串设置发布范围 button 的 icon 和文字
@@ -559,6 +563,28 @@ rangeButton.on Events.Click, ->
 picReset()
 locReset()
 setLocButtonNormal()
+
+
+# NameList State Settings
+NameListOn = ->
+	NameList.placeBehind(keyboard)
+	NameList.animate
+		opacity: 1
+		options: 
+			time: .1
+			curve: Bezier.easeInOut
+			
+NameListOff = ->
+	NameList.animate
+		opacity: 0
+		options: 
+			time: .1
+			curve: Bezier.easeInOut
+	Utils.delay .2, ->
+		NameList.sendToBack()
+		showAll()
+		Resetkeyboard()
+		NameListView.scrollY = 0
 
 # Keyboard Simulator
 # Variables
@@ -718,6 +744,10 @@ for key in letters.children
 			
 		checkValue()
 		input.emit(Events. ValueChange, input.value)
+		if @name is "a"
+			SearchName()
+			NameListOff()
+			ShowSearchResult()
 	
 # Tap interactions for numbers
 for key in numbers.children
@@ -767,10 +797,9 @@ for key in numbers.children
 		input.value += currentActiveLetter.text
 		input.emit(Events.InputValueChange, input.value)	
 		if @name is '@'
-			NameList.placeBehind(keyboard)
-			NameList.animate
-				opacity: 1
-				
+			NameListOn()
+
+
 # Keyboard methods	
 document.onkeydown = (e) ->
 	# Shift down
@@ -925,6 +954,8 @@ names =['Akan', 'Arabic', 'Bulgarian', 'Czech', 'Dutch', 'England','Fijian', 'Ge
 
 namesR = ['Daqian','Xiaohe', 'Xiaojing', 'Zhaoxi', 'Lulu']
 
+NameResult = ['A-bowlife', 'carmendarcy','国际4A广告' ,'A酱' ,'刘大美人A' ,'霸哥a' ,'哆啦A梦']
+
 # Name List settings
 NameList.opacity = 0
 NameList.sendToBack()
@@ -997,7 +1028,7 @@ for sectionIndex in [0...numberOfSections]
 			backgroundColor:"#F8F8F8"
 			html: "#{characters[sectionIndex]}"
 			style:
-				paddingLeft:"48px", fontWeight: "250"
+				paddingLeft:"48px", fontWeight: "250",paddingTop: "#{SpaceForStikyHeader}px"
 				lineHeight:"60px", fontSize:"17px", color: "black"
 		sectionHeader.originalYPosition = sectionHeader.y
 		sectionHeaders.push sectionHeader
@@ -1030,20 +1061,102 @@ for sectionIndex in [0...numberOfSections]
 				cells.push(cell)
 	# 			print cell.name
 
+SearchNameView = new ScrollComponent
+	width: SearchResult.width
+	height: 500
+	parent: SearchResult
+	backgroundColor: null
+	# The scroll direction is limited to only allow for vertical 
+SearchNameView.scrollHorizontal = false
+SearchNameView.mouseWheelEnabled = true
+SearchNameViewState = 0
+SearchNameView.onScrollStart -> SearchNameViewState = 1
+SearchNameView.onScrollEnd -> SearchNameViewState = 0
+SearchNameView.onMove (event) ->
+	yOffsetSN = -event.y
+	if yOffsetSN > layer.originalYPosition
+		if yOffsetSN > layer.originalYPosition + NameListDistance - NameListHeight + 20
+			layer.y = layer.originalYPosition + NameListDistance - NameListHeight + 20
+		else
+			layer.y = yOffsetSN - 1
+	else
+		layer.y = layer.originalYPosition
+	if SearchNameViewState = 1
+		hideAll()
+
+SearchResult.sendToBack()
+
+ShowSearchResult = ->
+	SearchResult.placeBehind(keyboard)
+	SearchResult.animate
+		opacity: 1
+		options: 
+			time: .1
+			curve: Bezier.easeInOut
+			
+HideSearchResult = ->
+	SearchResult.animate
+		opacity: 0
+		options: 
+			time: .1
+			curve: Bezier.easeInOut
+	Utils.delay 0.2, ->
+		SearchResult.sendToBack()
+			
+SearchName = ->
+	for rowIndex in [0...7]
+		# A cell is created for the row
+		cell = new Layer
+			name: NameResult[rowIndex]#(sectionIndex + 1) * 10 + rowIndex
+			x: 16
+			y: rowIndex*NameListHeight
+			width:NameList.width - 32, height:48
+			backgroundColor:null
+			style: borderBottom: "1px solid #E1E1E1"
+			# The cell is put inside the content layer of the scroll component
+			parent: SearchNameView.content
+		cells.push(cell)
+		nameAvatar = new Layer
+			parent: cell
+			y: Align.center
+			height: 30
+			width: 30
+			borderRadius: 30
+			borderColor: '#eee'
+			borderWidth: .5
+			backgroundColor: null
+			image: Utils.randomImage()
+		layer = new TextLayer
+			text: NameResult[rowIndex]
+			parent: cell
+			fontSize: 16, fontStyle: "PingFang SC", color: "#333", padding: top: 13,left: 40
+		searchMorePH = new Layer
+			x: 16
+			y: 7*NameListHeight
+			width:NameList.width - 32, height:48
+			backgroundColor:null
+			style: borderBottom: "1px solid #E1E1E1"
+			# The cell is put inside the content layer of the scroll component
+			parent: SearchNameView.content
+		searchMore = new TextLayer
+			text: "在网络上搜索"
+			parent: searchMorePH
+			fontSize: 16, fontStyle: "PingFang SC", color: "#333", padding: top: 13
+		searchMoreIcon.parent = SearchNameView.content
+		searchMoreIcon.y = searchMorePH.y + 13
+		searchMoreIcon.x = Screen.width - 25
+SearchName()
+
 # Input Names From NameList
 for layer in cells
 	layer.onClick ->
 		return if NameListView.isDragging
 		return if NameListView.isMoving
+		return if SearchNameView.isDragging
+		return if SearchNameView.isMoving
 		input.value += @name + " "
-		NameList.animate
-			opacity: 0
-			options: 
-				time: .1
-		NameList.sendToBack()
-		showAll()
-		Resetkeyboard()
-		NameListView.scrollY = 0
+		NameListOff()
+		HideSearchResult()
 
 # Stiky header / scroll & hide
 for layer in sectionHeaders
@@ -1126,10 +1239,12 @@ for layer in topiccells
 			opacity: 0
 			options: 
 				time: .1
-		TopicList.sendToBack()
-		showAll()
-		Resetkeyboard()
-		TopicListView.scrollY = 0
+				curve: Bezier.easeInOut
+		Utils.delay .2, ->
+			TopicList.sendToBack()
+			showAll()
+			Resetkeyboard()
+			TopicListView.scrollY = 0
 
 TopicListView.onScrollStart -> TopicListViewState = 1
 TopicListView.onScrollEnd -> TopicListViewState = 0
@@ -1137,4 +1252,4 @@ TopicListView.onMove (event) ->
 	if TopicListViewState = 1
 		hideAll()
 		
-bg.onClick -> showKeyboard()
+bg.onClick ->
