@@ -14,22 +14,25 @@ circleCheckableButtons = [0, 1, 2, 4, 5]
 NameListState = 0
 SendButton.opacity = 0
 Screen.backgroundColor = 'white'
-SendButton.onClick ->
-	Sent.animate
-		opacity: 1
-	screenA.animate
-		y: Screen.height
-	input.value = ""
-	Utils.delay 2, ->
+
+for layer in [SendButton, SendFor8]
+	layer.onClick ->
 		Sent.animate
-			opacity: 0
-		Utils.delay .3, ->
-			screenA.animate
-				y: 0
-			
+			opacity: 1
+		screenA.animate
+			y: Screen.height
+		input.value = ""
+		Utils.delay 2, ->
+			Sent.animate
+				opacity: 0
+			Utils.delay .3, ->
+				screenA.animate
+					y: 0
 
 
 faketouch.onClick ->
+faketouchForList.onClick ->
+faketouchForList.propagateEvents = false
 faketouch.propagateEvents = false
 
 #设备适配
@@ -40,6 +43,8 @@ TopSpaceForiPhoneX = 0
 SpaceForRange = 0
 iPhoneXStatuBar.opacity = 0
 SpaceForStikyHeader = 0
+SentFor8.opacity = 0
+SendFor8.opacity = 0
 if Screen.height == 812 || Framer.Device.deviceType == 'apple-iphone-x-silver' or Framer.Device.deviceType == 'apple-iphone-x-space-gray'
 	locationHalf.height = 333
 	SpaceForRange = 32
@@ -55,6 +60,14 @@ if Screen.height == 812 || Framer.Device.deviceType == 'apple-iphone-x-silver' o
 	toolBar.y = Screen.height - 333 - 42
 	locationRange.y = Screen.height - locationRange.height - 333 - 42
 	SpaceForStikyHeader = 13
+	TopicList.height -= 30
+	SearchResult.height -= 30
+	NameList.height -= 30
+	SentFor8.sendToBack()
+	SendFor8.sendToBack()
+else
+	SendButton.y = -100
+	SendFor8.opacity = 1
 pictureHalf.y -= SpaceForiPhoneX - 32
 SearchResult.height += SpaceForiPhoneX
 SearchResult.y += TopSpaceForiPhoneX
@@ -152,6 +165,7 @@ locationScrollView.states =
 		y: locationHalf.height + locationTitle.height
 		opacity: 0
 		animationOptions: locAnimations
+
 
 
 #初始化用函数
@@ -461,18 +475,21 @@ pictureTouched = () ->
 # at touched
 atTouched = () ->
 	input.value += "@"
-	NameList.placeBehind(keyboard)
+	NameList.placeBefore(faketouchForList)
 	NameList.animate
 		opacity: 1
 	NameListState = 1
-				
+	locationRange.animate
+		opacity: 0
 
 # topic touched
 topicTouched = () ->
 	input.value += "#"
-	TopicList.placeBehind(keyboard)
+	TopicList.placeBefore(faketouchForList)
 	TopicList.animate
 		opacity: 1
+	locationRange.animate
+		opacity: 0
 	
 # emoji selected
 emojiSelected = () ->
@@ -608,6 +625,8 @@ NameListOff = ->
 		Resetkeyboard()
 		NameListView.scrollY = 0
 	NameListState = 0
+	locationRange.animate
+		opacity: 1
 
 # Keyboard Simulator
 # Variables
@@ -722,9 +741,11 @@ checkValue = ->
 	if input.value == ""
 		setUppercase()
 		SendButton.opacity = 0
+		SentFor8.opacity = 0
 	else
 		setLowercase()
 		SendButton.opacity = 1
+		SentFor8.opacity = 1
 		
 # Tap interactions for letters
 for key in letters.children
@@ -919,9 +940,11 @@ backspace.onTapEnd ->
 			curve: Bezier.easeInOut
 	Utils.delay .2, ->
 		TopicList.sendToBack()
-
-
-
+		
+# Clear all
+backspace.onLongPress ->
+	input.value = ""
+	
 # Numbers
 numbersKey.onTap (event) ->
 	lettersActive = false 
