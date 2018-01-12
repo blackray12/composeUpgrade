@@ -19,6 +19,7 @@ SendButton.onClick ->
 		opacity: 1
 	screenA.animate
 		y: Screen.height
+	input.value = ""
 	Utils.delay 2, ->
 		Sent.animate
 			opacity: 0
@@ -274,7 +275,6 @@ for i in [0...locationScrollViewContent.subLayers.length]
 	setLocScrollContent(locationScrollViewContent.subLayers[i], locInfo[i][0], locInfo[i][1])
 
 
-
 # 各模块的控制函数
 
 # toolbar control
@@ -458,7 +458,7 @@ setRangeButtonNormal = () ->
 # picture touched
 pictureTouched = () ->
 	picShow()
-# at touched	
+# at touched
 atTouched = () ->
 	input.value += "@"
 	NameList.placeBehind(keyboard)
@@ -661,7 +661,8 @@ showActiveKey = (key, showLeftKey, showRightKey) ->
 		currentActiveLetter.textTransform = "uppercase"			
 	else
 		currentActiveLetter.textTransform = "lowercase"
-				
+	ValueLength = input.value.length
+	ListsRelocation = Math.round(ValueLength/70)
 	
 ## Map all keys
 mapLetterKeys = (e) ->	
@@ -748,10 +749,10 @@ for key in letters.children
 					
 	key.onTapEnd ->
 		return if numbersActive
-				
+
 		currentActiveKey = activeKey
 		currentActiveLetter = activeLetter
-		
+
 		if showLeftKey
 			currentActiveKey = activeKeyLeft
 			currentActiveLetter = activeLetterLeft
@@ -775,6 +776,7 @@ for key in letters.children
 				SearchName()
 				NameListOff()
 				ShowSearchResult()
+
 	
 # Tap interactions for numbers
 for key in numbers.children
@@ -909,6 +911,16 @@ backspace.onTapEnd ->
 	backSpaceIcon.visible = true
 	backSpaceIconActive.visible = false
 	checkValue()
+	NameListOff()
+	TopicList.animate
+		opacity: 0
+		options: 
+			time: .1
+			curve: Bezier.easeInOut
+	Utils.delay .2, ->
+		TopicList.sendToBack()
+
+
 
 # Numbers
 numbersKey.onTap (event) ->
@@ -1188,6 +1200,7 @@ for layer in cells
 		input.value += @name + " "
 		NameListOff()
 		HideSearchResult()
+		ValueLength = input.value.length
 
 # Stiky header / scroll & hide
 for layer in sectionHeaders
@@ -1208,7 +1221,7 @@ NameListView.onMove (event) ->
 	if NameListViewState = 1
 		hideAll()
 
-# Input Topics
+# Topics
 topics = ['食人的大鹫', '流行','雷神3：诸神黄昏', '每日桌面', '新浪总部大厦', "鹿晗",'30天英雄联盟挑战', '周总理逝世42周年', '河间驴肉火烧造假', 'V影响力峰会', '汪峰', '陈乔恩','挑一挑攻略', '守望先锋30天挑战', '人人网遭监管约谈', '李泽言0113生日快乐', '北京', '越听越痛的歌', '北京乐派', '南方的猪第一次看见雪', '亚洲新歌榜', '我的年度金曲', '跟着墩布挖白菜', '国家最高科技奖', '最晕路口37个红绿灯', '北京租房', '老公我要这个']
 tagIcon = ["images/topicIcon/movie.png","images/topicIcon/tag.png", "images/topicIcon/music.png", "images/topicIcon/loca.png"]
 
@@ -1276,6 +1289,7 @@ for layer in topiccells
 			showAll()
 			Resetkeyboard()
 			TopicListView.scrollY = 0
+		ValueLength = input.value.length
 
 TopicListView.onScrollStart -> TopicListViewState = 1
 TopicListView.onScrollEnd -> TopicListViewState = 0
