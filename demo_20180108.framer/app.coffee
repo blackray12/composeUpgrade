@@ -10,7 +10,26 @@ defaultRanges = ['公开', '好友圈', '仅自己可见']
 # 范围列表可选元素
 circleCheckableButtons = [0, 1, 2, 4, 5]
 
+# get the state of the NameList
+NameListState = 0
+SendButton.opacity = 0
+Screen.backgroundColor = 'white'
+SendButton.onClick ->
+	Sent.animate
+		opacity: 1
+	screenA.animate
+		y: Screen.height
+	Utils.delay 2, ->
+		Sent.animate
+			opacity: 0
+		Utils.delay .3, ->
+			screenA.animate
+				y: 0
+			
 
+
+faketouch.onClick ->
+faketouch.propagateEvents = false
 
 #设备适配
 
@@ -445,6 +464,7 @@ atTouched = () ->
 	NameList.placeBehind(keyboard)
 	NameList.animate
 		opacity: 1
+	NameListState = 1
 				
 
 # topic touched
@@ -566,6 +586,7 @@ setLocButtonNormal()
 
 
 # NameList State Settings
+
 NameListOn = ->
 	NameList.placeBehind(keyboard)
 	NameList.animate
@@ -573,6 +594,7 @@ NameListOn = ->
 		options: 
 			time: .1
 			curve: Bezier.easeInOut
+	NameListState = 1
 			
 NameListOff = ->
 	NameList.animate
@@ -585,6 +607,7 @@ NameListOff = ->
 		showAll()
 		Resetkeyboard()
 		NameListView.scrollY = 0
+	NameListState = 0
 
 # Keyboard Simulator
 # Variables
@@ -593,6 +616,7 @@ numbersActive = false
 showLeftKey = false 
 showRightKey = false
 showLargeKey = false
+input.readonly = true
 
 # Methods 		
 ## Show active key
@@ -696,8 +720,10 @@ setLowercase = ->
 checkValue = ->
 	if input.value == ""
 		setUppercase()
+		SendButton.opacity = 0
 	else
 		setLowercase()
+		SendButton.opacity = 1
 		
 # Tap interactions for letters
 for key in letters.children
@@ -745,9 +771,10 @@ for key in letters.children
 		checkValue()
 		input.emit(Events. ValueChange, input.value)
 		if @name is "a"
-			SearchName()
-			NameListOff()
-			ShowSearchResult()
+			if NameListState == 1
+				SearchName()
+				NameListOff()
+				ShowSearchResult()
 	
 # Tap interactions for numbers
 for key in numbers.children
@@ -881,7 +908,8 @@ backspace.onTapStart ->
 backspace.onTapEnd ->
 	backSpaceIcon.visible = true
 	backSpaceIconActive.visible = false
-	
+	checkValue()
+
 # Numbers
 numbersKey.onTap (event) ->
 	lettersActive = false 
@@ -924,6 +952,9 @@ JustShowKeyboard = ->
 	numeric.animate
 		opacity: 1
 		y: Screen.height - 216 - SpaceForiPhoneX
+		
+JustShowKeyboard()
+
 hideKeyboard = ->
 	JustHideKeyboard()
 	toolBar.animate
