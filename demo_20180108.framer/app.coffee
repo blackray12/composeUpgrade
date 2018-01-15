@@ -18,6 +18,7 @@ NameListState = 0
 SendButton.opacity = 0
 Screen.backgroundColor = 'white'
 
+Sent.center()
 for layer in [SendButton, SendFor8]
 	layer.onClick ->
 		Sent.animate
@@ -79,6 +80,7 @@ if Screen.height == 812
 	NameList.height -= 30
 	SentFor8.sendToBack()
 	SendFor8.sendToBack()
+	SendButton.bringToFront()
 else
 	SendButton.y = -100
 	SendFor8.opacity = 1
