@@ -65,10 +65,11 @@ if Screen.height == 812 || Framer.Device.deviceType == 'apple-iphone-x-silver' o
 	NameList.height -= 30
 	SentFor8.sendToBack()
 	SendFor8.sendToBack()
+	pictureHalf.y -= SpaceForiPhoneX - 32
 else
 	SendButton.y = -100
 	SendFor8.opacity = 1
-pictureHalf.y -= SpaceForiPhoneX - 32
+
 SearchResult.height += SpaceForiPhoneX
 SearchResult.y += TopSpaceForiPhoneX
 # InputLayer Settings / Default animation
