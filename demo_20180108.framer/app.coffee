@@ -592,7 +592,7 @@ originPicButton.reset()
 
 originPicButton.on Events.Click, ->
 	if originPicButton.stat
-		originPictureButtonPic.image = "images/originpic/false.pngs"
+		originPictureButtonPic.image = "images/originpic/false.png"
 		originPicButton.stat = false
 	else
 		originPictureButtonPic.image = "images/originpic/true.png"
