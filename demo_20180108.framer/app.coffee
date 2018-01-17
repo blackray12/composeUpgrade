@@ -1374,7 +1374,6 @@ for sectionIndex in [0...TopicnumberOfSections]
 		height: 20
 		borderRadius: 10
 		backgroundColor: null
-		opacity: .6
 		x: 2
 		y: 25
 		image: Utils.randomChoice(tagIcon)
