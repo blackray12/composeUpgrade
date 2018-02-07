@@ -1272,7 +1272,7 @@ SearchNameView.onMove (event) ->
 		yOffsetStateSN = 0
 		if SearchNameViewState = 1 && yOffsetSN > 2
 			hideAll()
-	if yOffsetStateSN == 1
+	if yOffsetStateSN == 1 && SearchNameViewState == 0
 		showKeyboard()
 		locationRange.y = locationRange.originalYPosition
 
