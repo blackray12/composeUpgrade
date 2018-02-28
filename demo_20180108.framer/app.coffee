@@ -1022,7 +1022,19 @@ document.onkeyup = (e) ->
 # Space
 space.onTap -> input.value += " "	
 space.onTapStart -> @backgroundColor = "#ACB4BC"	
-space.onTapEnd -> @backgroundColor = "#FFFFFF"
+space.onTapEnd -> 
+	@backgroundColor = "#FFFFFF"
+	NameListOff()
+	HideGuideTopic()
+	TopicList.animate
+		opacity: 0
+		options: 
+			time: .1
+			curve: Bezier.easeInOut
+	Utils.delay .2, ->
+		TopicList.sendToBack()
+
+
 input.onSpaceKey -> space.backgroundColor = "#ACB4BC"
 
 # Return
