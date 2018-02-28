@@ -1,7 +1,7 @@
 # 基础信息
 
 # all data here
-# print Framer.Device.deviceType
+
 # location info
 locInfo = [['北京','6093.3万'],['新浪总部大厦','10.3万'],['新浪食堂','0'],['百度科技园','103.6万'],['杨国福','109'],['达美乐','500']]
 # default ranges
@@ -10,11 +10,15 @@ defaultRanges = ['公开', '好友圈', '仅自己可见']
 # 范围列表可选元素
 circleCheckableButtons = [0, 1, 2, 4, 5]
 
+# plus 按钮内功能
+plusData = ['头条文章', '股票', '商品']
+
 # get the state of the NameList
 NameListState = 0
 SendButton.opacity = 0
 Screen.backgroundColor = 'white'
 
+Sent.center()
 for layer in [SendButton, SendFor8]
 	layer.onClick ->
 		Sent.animate
@@ -30,10 +34,12 @@ for layer in [SendButton, SendFor8]
 					y: 0
 
 
+
 faketouch.onClick ->
 faketouchForList.onClick ->
 faketouchForList.propagateEvents = false
 faketouch.propagateEvents = false
+CallKeyboard.onClick -> showKeyboard()
 
 #设备适配
 
@@ -45,19 +51,30 @@ iPhoneXStatuBar.opacity = 0
 SpaceForStikyHeader = 0
 SentFor8.opacity = 0
 SendFor8.opacity = 0
-if Screen.height == 812 || Framer.Device.deviceType == 'apple-iphone-x-silver' or Framer.Device.deviceType == 'apple-iphone-x-space-gray'
-	locationHalf.height = 333
+if Screen.height == 812
+	emotion.height = 332
+	emotionTab.y -= 34
+	selectors.y -= 40
+	emotionPics.height = 168
+	emotionPics.y += 8
+	
+	plus.height = 332
+	plusArea.height = plus.height - 34
+
 	SpaceForRange = 32
+	locationHalf.height = 376
+	circleHalf.height = 376
+	pictureHalf.height = 376
 	locationScrollViewContent.height += 20
+	circleScrollViewContent.height += 20
+	
 	keyboard.y = Screen.height - 291
 	SpaceForiPhoneX = 75
 	TopSpaceForiPhoneX = 22
 	iPhoneXStatuBar.opacity = 1
 	bg.y += TopSpaceForiPhoneX
-	circleHalf.height = 333
-	pictureHalf.height = 333
-	circleScrollViewContent.height += 20
-	toolBar.y = Screen.height - 333 - 42
+
+	toolBar.y = Screen.height - 376
 	locationRange.y = Screen.height - locationRange.height - 333 - 42
 	SpaceForStikyHeader = 13
 	TopicList.height -= 30
@@ -65,12 +82,21 @@ if Screen.height == 812 || Framer.Device.deviceType == 'apple-iphone-x-silver' o
 	NameList.height -= 30
 	SentFor8.sendToBack()
 	SendFor8.sendToBack()
+	SendButton.bringToFront()
 else
 	SendButton.y = -100
 	SendFor8.opacity = 1
-pictureHalf.y -= SpaceForiPhoneX - 32
-SearchResult.height += SpaceForiPhoneX
 SearchResult.y += TopSpaceForiPhoneX
+
+
+if Screen.width == 414
+	keyboardRatio = 414/375
+	keyboard.scaleX = keyboardRatio
+	SendFor8.y += 4
+	SendFor8.x -= 1
+	SentFor8.y += 4
+	SentFor8.x -= 1
+	
 # InputLayer Settings / Default animation
 {InputLayer} = require "input"
 # Wrap input layer
@@ -81,6 +107,19 @@ Framer.Defaults.Animation =
 # 	curve: Bezier.easeInOut
 	curve: Spring(damping: 1) 
 # 	time: .5
+
+
+Guide.parent = toolBar
+Guide.center()
+Guide.sendToBack()
+Guide.opacity = 0
+
+GuideTopic.parent = toolBar
+GuideTopic.center()
+GuideTopic.sendToBack()
+GuideTopic.opacity = 0
+
+
 
 
 # 动画、状态
@@ -189,10 +228,8 @@ setButtonImg = (button, imgName, func1, isInstant, func2) ->
 		button.on Events.MouseDown, -> 
 			if button.touchStat == 0
 				button.subLayers[0].image = "images/buttonImages/#{imgName}_highlighted.png"
-				JustHideKeyboard()
 			else
 				button.subLayers[0].image = "images/buttonImages/key_highlighted.png"
-				JustShowKeyboard()
 		button.on Events.MouseUp, ->
 			if button.touchStat == 0
 				button.subLayers[0].image = "images/buttonImages/key.png"
@@ -308,6 +345,7 @@ picPositionReset = () ->
 
 # 初始化图片 checkbox
 picButtonReset = () ->
+	originPicButton.reset()
 	for layers in halfPics.subLayers
 		layers.reset()
 		
@@ -471,9 +509,19 @@ setRangeButtonNormal = () ->
 
 # picture touched
 pictureTouched = () ->
+	toolBarButton3.reset()
+	toolBarButton4.reset()
+	emotion.opacity = 0
+	plus.opacity = 0
 	picShow()
+
+
 # at touched
 atTouched = () ->
+	toolBarButton3.reset()
+	toolBarButton4.reset()
+	emotion.opacity = 0
+	plus.opacity = 0
 	input.value += "@"
 	NameList.placeBefore(faketouchForList)
 	NameList.animate
@@ -481,29 +529,46 @@ atTouched = () ->
 	NameListState = 1
 	locationRange.animate
 		opacity: 0
+	ShowGuide()
 
 # topic touched
 topicTouched = () ->
+	toolBarButton3.reset()
+	toolBarButton4.reset()
+	emotion.opacity = 0
+	plus.opacity = 0
 	input.value += "#"
 	TopicList.placeBefore(faketouchForList)
 	TopicList.animate
 		opacity: 1
 	locationRange.animate
 		opacity: 0
+	ShowGuideTopic()
 	
 # emoji selected
 emojiSelected = () ->
 	toolBarButton4.reset()
+	emotion.opacity = 1
+	plus.opacity = 0
+	JustHideKeyboard()
 	
 # emoji unselected
 emojiUnselceted = () ->
+	emotion.opacity = 0
+	showKeyboard()
+
 
 # plus selected
 plusSelected = () ->
 	toolBarButton3.reset()
+	plus.opacity = 1
+	emotion.opacity = 0
+	JustHideKeyboard()
 	
 # plus unselected
 plusUnselceted = () ->
+	plus.opacity = 0
+	showKeyboard()
 
 
 # 初始化
@@ -534,8 +599,24 @@ for layers in halfPics.subLayers
 finshButton.on Events.Click, ->
 	picVanish()
 
+originPictureButtonPic.backgroundColor = "transparent"
+
+originPicButton.reset = () ->
+	originPictureButtonPic.image = "images/originpic/false.png"
+	originPicButton.stat = false
+	
+originPicButton.reset()
+
+originPicButton.on Events.Click, ->
+	if originPicButton.stat
+		originPictureButtonPic.image = "images/originpic/false.png"
+		originPicButton.stat = false
+	else
+		originPictureButtonPic.image = "images/originpic/true.png"
+		originPicButton.stat = true
+	
+
 # locationhalf init
-locationHalf.height += SpaceForiPhoneX - SpaceForRange
 locationScrollView.clip = true
 locationScrollViewContent.draggable.enabled = true
 locationScrollViewContent.draggable.speedX = 0
@@ -550,7 +631,6 @@ locationScrollViewContent.on Events.DragStart, ->
 	locationScrollViewContent.clickStat = false
 
 # circle init
-circleHalf.height += SpaceForiPhoneX - SpaceForRange
 circleScrollView.clip = true
 circleScrollViewContent.draggable.enabled = true
 circleScrollViewContent.draggable.speedX = 0
@@ -588,13 +668,39 @@ setLocButtonNormal()
 setRangeButtonNormal()
 
 locationButtonBg.on Events.Click, ->
+	toolBarButton3.reset()
+	toolBarButton4.reset()
+	emotion.opacity = 0
+	plus.opacity = 0
 	locShow()
 	circleVanish()
 	
 rangeButton.on Events.Click, ->
+	toolBarButton3.reset()
+	toolBarButton4.reset()
+	emotion.opacity = 0
+	plus.opacity = 0
 	circleShow()
 	locVanish()
 	hideKeyboard()
+
+
+#emotion init
+emotion.opacity = 0
+
+for i in [0...emotionPics.subLayers.length - 1]
+	emotionPics.subLayers[i].image = "images/emotionpic/#{i}.png"
+
+# plus init
+plus.opactity = 0
+
+for i in [0...plusButtons.subLayers.length]
+	if i < plusData.length
+		plusButtons.subLayers[i].subLayers[1].text = plusData[i]
+		plusButtons.subLayers[i].subLayers[0].backgroundColor = "transparent"
+		plusButtons.subLayers[i].subLayers[0].image = "images/plusButtons/#{i}.png"
+	else
+		plusButtons.subLayers[i].visible = false
 
 
 picReset()
@@ -603,7 +709,18 @@ setLocButtonNormal()
 
 
 # NameList State Settings
-
+ShowGuide = ->
+	Guide.bringToFront()
+	Utils.delay 0.1, ->
+		Guide.animate
+			opacity: 1
+			
+HideGuide = ->
+	Guide.animate
+		opacity: 0
+	Utils.delay 0.1, ->
+		Guide.sendToBack()
+		
 NameListOn = ->
 	NameList.placeBehind(keyboard)
 	NameList.animate
@@ -612,7 +729,10 @@ NameListOn = ->
 			time: .1
 			curve: Bezier.easeInOut
 	NameListState = 1
-			
+	ShowGuide()
+
+
+	
 NameListOff = ->
 	NameList.animate
 		opacity: 0
@@ -627,6 +747,8 @@ NameListOff = ->
 	NameListState = 0
 	locationRange.animate
 		opacity: 1
+	HideGuide()
+
 
 # Keyboard Simulator
 # Variables
@@ -797,6 +919,7 @@ for key in letters.children
 				SearchName()
 				NameListOff()
 				ShowSearchResult()
+				toolBar.sendToBack()
 
 	
 # Tap interactions for numbers
@@ -848,6 +971,7 @@ for key in numbers.children
 		input.emit(Events.InputValueChange, input.value)	
 		if @name is '@'
 			NameListOn()
+			
 
 
 # Keyboard methods	
@@ -933,6 +1057,7 @@ backspace.onTapEnd ->
 	backSpaceIconActive.visible = false
 	checkValue()
 	NameListOff()
+	HideGuideTopic()
 	TopicList.animate
 		opacity: 0
 		options: 
@@ -995,6 +1120,7 @@ hideKeyboard = ->
 	toolBar.animate
 		opacity: 0
 		y: Screen.height
+
 
 showKeyboard = ->
 	JustShowKeyboard()
@@ -1140,15 +1266,15 @@ SearchNameView.onScrollStart -> SearchNameViewState = 1
 SearchNameView.onScrollEnd -> SearchNameViewState = 0
 SearchNameView.onMove (event) ->
 	yOffsetSN = -event.y
-	if yOffsetSN > layer.originalYPosition
-		if yOffsetSN > layer.originalYPosition + NameListDistance - NameListHeight + 20
-			layer.y = layer.originalYPosition + NameListDistance - NameListHeight + 20
-		else
-			layer.y = yOffsetSN - 1
-	else
-		layer.y = layer.originalYPosition
-	if SearchNameViewState = 1
-		hideAll()
+	if yOffsetSN < 1
+		yOffsetStateSN = 1
+	else 
+		yOffsetStateSN = 0
+		if SearchNameViewState = 1 && yOffsetSN > 2
+			hideAll()
+	if yOffsetStateSN == 1 && SearchNameViewState == 0
+		showKeyboard()
+		locationRange.y = locationRange.originalYPosition
 
 SearchResult.sendToBack()
 
@@ -1224,6 +1350,7 @@ for layer in cells
 		NameListOff()
 		HideSearchResult()
 		ValueLength = input.value.length
+		toolBar.placeBefore(keyboard)
 
 # Stiky header / scroll & hide
 for layer in sectionHeaders
@@ -1241,14 +1368,34 @@ NameListView.onMove (event) ->
 				layer.y = yOffset - 1
 		else
 			layer.y = layer.originalYPosition
-	if NameListViewState = 1
-		hideAll()
+	if yOffset < 1
+		yOffsetState = 1
+	else 
+		yOffsetState = 0
+		if NameListViewState = 1 && yOffset > 2
+			hideAll()
+	if yOffsetState == 1
+		showKeyboard()
+		locationRange.y = locationRange.originalYPosition
 
 # Topics
 topics = ['食人的大鹫', '流行','雷神3：诸神黄昏', '每日桌面', '新浪总部大厦', "鹿晗",'30天英雄联盟挑战', '周总理逝世42周年', '河间驴肉火烧造假', 'V影响力峰会', '汪峰', '陈乔恩','挑一挑攻略', '守望先锋30天挑战', '人人网遭监管约谈', '李泽言0113生日快乐', '北京', '越听越痛的歌', '北京乐派', '南方的猪第一次看见雪', '亚洲新歌榜', '我的年度金曲', '跟着墩布挖白菜', '国家最高科技奖', '最晕路口37个红绿灯', '北京租房', '老公我要这个']
 tagIcon = ["images/topicIcon/movie.png","images/topicIcon/tag.png", "images/topicIcon/music.png", "images/topicIcon/loca.png"]
 
 # Topic List settings
+
+ShowGuideTopic = ->
+	GuideTopic.bringToFront()
+	Utils.delay 0.1, ->
+		GuideTopic.animate
+			opacity: 1
+			
+HideGuideTopic = ->
+	GuideTopic.animate
+		opacity: 0
+	Utils.delay 0.1, ->
+		GuideTopic.sendToBack()
+	
 TopicList.opacity = 0
 TopicList.sendToBack()
 TopicList.y += TopSpaceForiPhoneX
@@ -1285,7 +1432,6 @@ for sectionIndex in [0...TopicnumberOfSections]
 		height: 20
 		borderRadius: 10
 		backgroundColor: null
-		opacity: .6
 		x: 2
 		y: 25
 		image: Utils.randomChoice(tagIcon)
@@ -1313,11 +1459,20 @@ for layer in topiccells
 			Resetkeyboard()
 			TopicListView.scrollY = 0
 		ValueLength = input.value.length
+		HideGuideTopic()
 
 TopicListView.onScrollStart -> TopicListViewState = 1
 TopicListView.onScrollEnd -> TopicListViewState = 0
 TopicListView.onMove (event) ->
-	if TopicListViewState = 1
-		hideAll()
+	yOffsett = - event.y
+	if yOffsett < 1
+		yOffsetStatee = 1
+	else 
+		yOffsetStatee = 0
+		if TopicListViewState = 1 && yOffsett > 2
+			hideAll()
+	if yOffsetStatee == 1
+		showKeyboard()
+		locationRange.y = locationRange.originalYPosition
 		
 bg.onClick ->
